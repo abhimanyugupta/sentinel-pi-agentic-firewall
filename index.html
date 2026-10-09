@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta name="description" content="Read-only, precomputed synthetic prompt-injection firewall traces and evaluation evidence.">
+  <link rel="icon" href="data:,">
+  <title>SENTINEL PI | Static Replay Lab</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./data.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to replay</a>
+  <header class="site-header">
+    <div class="brand-block">
+      <p class="eyebrow">ET AI Hackathon · Problem 2</p>
+      <h1>SENTINEL PI <span>Static Replay Lab</span></h1>
+      <p class="lede">A read-only tour of the prompt-injection firewall prototype.</p>
+    </div>
+    <div class="mode-banner" role="note" aria-label="Demo mode">
+      <strong>PRECOMPUTED SYNTHETIC TRACES</strong>
+      <span>No live agent, model call, server API, or real tool action</span>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="evidence-section" aria-labelledby="evidence-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Measured results</p>
+          <h2 id="evidence-title">Public development fixtures</h2>
+        </div>
+        <p class="scope-note">Known regression data, not a blind benchmark or a field estimate.</p>
+      </div>
+      <div id="metric-grid" class="metric-grid" aria-live="polite"></div>
+      <p id="evaluation-footnote" class="muted small"></p>
+    </section>
+
+    <section id="trace" class="trace-section" aria-labelledby="trace-title">
+      <div class="section-heading trace-heading">
+        <div>
+          <p class="eyebrow">Recorded synthetic execution</p>
+          <h2 id="trace-title">Compare baseline and protected traces</h2>
+        </div>
+        <label class="scenario-control" for="scenario-select">
+          <span>Choose a fixture</span>
+          <select id="scenario-select"></select>
+        </label>
+      </div>
+
+      <div class="scenario-summary">
+        <div>
+          <h3 id="scenario-name"></h3>
+          <p id="scenario-description" class="muted"></p>
+        </div>
+        <span class="precomputed-tag">PRECOMPUTED</span>
+      </div>
+
+      <div class="source-panel">
+        <div class="panel-title-row">
+          <h3>Untrusted source content</h3>
+          <span id="source-trust" class="status-pill"></span>
+        </div>
+        <dl id="source-metadata" class="metadata-list"></dl>
+        <pre id="source-content" class="source-content"></pre>
+        <div class="decision-line">
+          <strong>Firewall</strong>
+          <span id="firewall-action" class="action-pill"></span>
+          <span id="firewall-risk" class="muted"></span>
+        </div>
+        <ul id="firewall-reasons" class="reason-list"></ul>
+      </div>
+
+      <div class="comparison-grid">
+        <article class="run-panel baseline-panel" aria-labelledby="baseline-title">
+          <div class="panel-title-row">
+            <h3 id="baseline-title">Unprotected baseline</h3>
+            <span class="baseline-tag">ISOLATED MOCK</span>
+          </div>
+          <p class="panel-caption">The fixture simulator reads the text and generates this recorded proposal.</p>
+          <div id="baseline-trace"></div>
+        </article>
+        <article class="run-panel protected-panel" aria-labelledby="protected-title">
+          <div class="panel-title-row">
+            <h3 id="protected-title">Protected path</h3>
+            <span class="protected-tag">FIREWALL + INTENT GATE</span>
+          </div>
+          <p class="panel-caption">Blocked or quarantined text is withheld before proposal generation; the gate remains independent.</p>
+          <div id="protected-trace"></div>
+        </article>
+      </div>
+      <p class="simulator-note">Simulator: <code id="simulator-name"></code>. The attack proposal is content-triggered in this deterministic fixture simulator; it is not a live-model trace.</p>
+    </section>
+
+    <section class="candidate-section" aria-labelledby="candidate-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Policy hardening evidence</p>
+          <h2 id="candidate-title">Candidate rules go through regression checks</h2>
+        </div>
+        <p class="scope-note">Acceptance can mean a severity change; it does not by itself show better attack containment.</p>
+      </div>
+      <div id="candidate-results" class="candidate-grid"></div>
+      <p class="muted small">For the displayed candidate, all public attack fixtures were already blocked or quarantined. The candidate changed severity only. Accepted policy changes affect later replays in the current process and reset when the app restarts.</p>
+    </section>
+
+    <section class="raw-section" aria-labelledby="raw-title">
+      <details>
+        <summary id="raw-title">Inspect per-case evaluation evidence</summary>
+        <p class="muted small">Each row is one public development fixture. The separate one-case external-provenance invariant is reported outside the 30-case classifier denominator.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fixture</th><th>Class</th><th>Expected</th><th>Predicted</th><th>Action</th><th>Latency</th></tr></thead>
+            <tbody id="prediction-rows"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section id="limits" class="limits-section" aria-labelledby="limits-title">
+      <p class="eyebrow">Scope and limits</p>
+      <h2 id="limits-title">What this prototype has not validated</h2>
+      <ul>
+        <li>No live model, external retrieval, credentials, real customer records, or production tools.</li>
+        <li>No blind holdout, independent red-team adjudication, or evidence of performance on unseen traffic.</li>
+        <li>The caller supplies host-bound provenance context to the deterministic gate. This prototype does not cryptographically authenticate source identifiers or prove a model's causal reasoning.</li>
+        <li>The support task checks its ticket against the synthetic customer record, while the host-created task contract controls tool, customer, category, and call budget. The answer guard matches fixture phrases; it does not verify paraphrased claims semantically.</li>
+        <li>Impact on productivity, cost, incident rate, or customer outcomes has not been measured.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>SENTINEL PI · Local synthetic prototype · Static read-only evidence</p>
+    <p>Evaluation run <code id="evaluation-id"></code> · Fixture SHA-256 <code id="dataset-hash"></code></p>
+  </footer>
+  <noscript><p class="noscript">Enable JavaScript to inspect the included static trace data. This page makes no network calls.</p></noscript>
+</body>
+</html>
