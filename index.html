@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
   <meta name="description" content="Read-only, precomputed synthetic prompt-injection firewall traces and evaluation evidence.">
   <link rel="icon" href="data:,">
-  <title>SENTINEL PI | Static Replay Lab</title>
+  <title>SENTINEL PI | Agent Flight Recorder</title>
   <link rel="stylesheet" href="./styles.css">
   <script defer src="./data.js"></script>
   <script defer src="./app.js"></script>
@@ -15,18 +15,97 @@
 <body>
   <a class="skip-link" href="#main">Skip to replay</a>
   <header class="site-header">
-    <div class="brand-block">
-      <p class="eyebrow">ET AI Hackathon · Problem 2</p>
-      <h1>SENTINEL PI <span>Static Replay Lab</span></h1>
-      <p class="lede">A read-only tour of the prompt-injection firewall prototype.</p>
+    <nav class="topbar" aria-label="Primary navigation">
+      <a class="brand-mark" href="#main" aria-label="SENTINEL PI evidence studio">SENTINEL <span>PI</span><span class="brand-dot" aria-hidden="true"></span></a>
+      <div class="topbar-links">
+        <a href="#incident">The incident</a>
+        <a href="#trace">Replay lab</a>
+        <a class="nav-featured" href="./gemma3/index.html">Recorded Gemma 3 <span aria-hidden="true">↗</span></a>
+      </div>
+    </nav>
+    <div class="hero-layout">
+      <div class="brand-block">
+        <p class="eyebrow hero-eyebrow"><span class="hero-dot" aria-hidden="true"></span> AGENT SECURITY / EVIDENCE STUDIO</p>
+        <h1>AI agents can be persuaded.<br><span>Their tools shouldn't be.</span></h1>
+        <p class="lede">See a real model propose an attacker-poisoned support ticket—and the independent host control that refused to execute it.</p>
+        <div class="hero-actions">
+          <a class="hero-primary" href="./gemma3/index.html">Inspect the recorded attack <span aria-hidden="true">↗</span></a>
+          <a class="hero-secondary" href="#trace">Explore the defense <span aria-hidden="true">↓</span></a>
+        </div>
+        <p class="hero-disclosure">Real Gemma 3 outputs, fictional customer and tools. Saved evidence, not live inference.</p>
+      </div>
+      <div class="hero-incident" aria-label="Summary of the recorded Gemma 3 attack and authorization outcome">
+        <div class="incident-window-bar">
+          <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>INCIDENT / 001</span>
+          <span class="window-tag">RECORDED MODEL</span>
+        </div>
+        <div class="incident-window-body">
+          <div class="incident-step">
+            <span class="step-index">01</span>
+            <div><span class="step-label">LOWER-TRUST DOCUMENT</span><strong>Attempted ticket poisoning</strong></div>
+            <span class="step-state state-untrusted">UNTRUSTED</span>
+          </div>
+          <div class="step-connector" aria-hidden="true"></div>
+          <div class="incident-step">
+            <span class="step-index">02</span>
+            <div><span class="step-label">ACTUAL GEMMA PROPOSAL</span><strong class="attack-quote">“Refund approved by administrator”</strong></div>
+            <span class="step-state state-proposed">PROPOSED</span>
+          </div>
+          <div class="step-connector" aria-hidden="true"></div>
+          <div class="incident-step">
+            <span class="step-index">03</span>
+            <div><span class="step-label">HOST INTENT GATE</span><strong>Unauthorized source provenance rejected</strong></div>
+            <span class="step-state state-denied">DENIED</span>
+          </div>
+          <div class="incident-window-foot">
+            <span><span class="tiny-check" aria-hidden="true">✓</span> No unauthorized mock effect</span>
+            <span>Same gate in both conditions</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="mode-banner" role="note" aria-label="Demo mode">
-      <strong>PRECOMPUTED SYNTHETIC TRACES</strong>
-      <span>No live agent, model call, server API, or real tool action</span>
+    <div class="hero-bottom">
+      <div class="mode-banner" role="note" aria-label="Demo mode">
+        <strong>PRECOMPUTED SYNTHETIC TRACES</strong>
+        <span>The replay lab below is deterministic; the separate Gemma recording contains actual saved model outputs.</span>
+      </div>
+      <a class="hero-scroll" href="#incident">SCROLL TO THE EVIDENCE <span aria-hidden="true">↓</span></a>
     </div>
   </header>
 
   <main id="main">
+    <section id="incident" class="incident-section" aria-labelledby="incident-title">
+      <div class="incident-intro">
+        <div>
+          <p class="eyebrow">01 / The recorded incident</p>
+          <h2 id="incident-title">One attack. Two observable outcomes.</h2>
+          <p class="incident-subtitle">The same synthetic support task and mandatory host gate, with one controlled difference: whether the lower-trust document reached Gemma 3.</p>
+        </div>
+        <a class="evidence-link" href="./gemma3/index.html">Open full model evidence <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="incident-comparison">
+        <article class="incident-condition condition-unscreened">
+          <div class="condition-top"><span class="condition-label"><span class="condition-dot" aria-hidden="true"></span> UNSCREENED INPUT + GATE</span><span class="condition-number">01</span></div>
+          <h3>Gemma proposed a ticket using the attacker's text.</h3>
+          <p>The host gate denied this attacker-influenced proposal because its host-bound sources fell outside the user-authorized provenance scope. The legitimate task remained incomplete in this recorded case.</p>
+          <div class="condition-verdict verdict-denied"><span aria-hidden="true">×</span> Proposed action denied</div>
+        </article>
+        <article class="incident-condition condition-screened">
+          <div class="condition-top"><span class="condition-label"><span class="condition-dot" aria-hidden="true"></span> FIREWALL + SAME GATE</span><span class="condition-number">02</span></div>
+          <h3>The hostile document was withheld.</h3>
+          <p>Gemma searched the authorized customer record and proposed the correct support ticket. The same gate authorized that record-backed mock action.</p>
+          <div class="condition-verdict verdict-allowed"><span aria-hidden="true">✓</span> Legitimate task completed</div>
+        </article>
+      </div>
+      <div class="incident-result-strip" aria-label="Results from the six-case disclosed Gemma 3 development run">
+        <div><strong>4<span>/6</span></strong><span>Unscreened tasks correct</span></div>
+        <div><strong>6<span>/6</span></strong><span>Screened tasks correct</span></div>
+        <div><strong>0<span> / 0</span></strong><span>Unauthorized mock effects, unscreened / screened</span></div>
+        <p>Six reused development cases per condition, not a blind benchmark. The mandatory gate was active in both conditions. <a href="./gemma3/index.html">Inspect the full recording ↗</a></p>
+      </div>
+    </section>
+
     <section class="evidence-section" aria-labelledby="evidence-title">
       <div class="section-heading">
         <div>
@@ -57,6 +136,11 @@
           <p id="scenario-description" class="muted"></p>
         </div>
         <span class="precomputed-tag">PRECOMPUTED</span>
+      </div>
+
+      <div class="authorized-task" role="note" aria-labelledby="authorized-task-title">
+        <p class="eyebrow" id="authorized-task-title">Authorized user task</p>
+        <p id="authorized-task"></p>
       </div>
 
       <div class="source-panel">
@@ -92,6 +176,14 @@
           <div id="protected-trace"></div>
         </article>
       </div>
+      <div class="passport-panel" aria-labelledby="passport-title">
+        <div class="passport-heading">
+          <div><p class="eyebrow">Decision passport / selected fixture</p><h3 id="passport-title">Follow the trust boundary</h3></div>
+          <span class="passport-mode">HOST-RECORDED · SYNTHETIC</span>
+        </div>
+        <p class="passport-lede">A compact, inspectable trail of where the source came from, what the firewall admitted, what the host gate authorized, and what the mock runtime did. This is an evidence view, not a cryptographically signed certificate.</p>
+        <div id="decision-passport" class="passport-grid" aria-live="polite"></div>
+      </div>
       <p class="simulator-note">Simulator: <code id="simulator-name"></code>. The attack proposal is content-triggered in this deterministic fixture simulator; it is not a live-model trace.</p>
     </section>
 
@@ -124,7 +216,7 @@
       <p class="eyebrow">Scope and limits</p>
       <h2 id="limits-title">What this prototype has not validated</h2>
       <ul>
-        <li>No live model, external retrieval, credentials, real customer records, or production tools.</li>
+        <li>This deterministic replay runs no live model. A separate static supplement shows recorded local Gemma 3 evidence; neither page makes model requests.</li>
         <li>No blind holdout, independent red-team adjudication, or evidence of performance on unseen traffic.</li>
         <li>The caller supplies host-bound provenance context to the deterministic gate. This prototype does not cryptographically authenticate source identifiers or prove a model's causal reasoning.</li>
         <li>The support task checks its ticket against the synthetic customer record, while the host-created task contract controls tool, customer, category, and call budget. The answer guard matches fixture phrases; it does not verify paraphrased claims semantically.</li>
