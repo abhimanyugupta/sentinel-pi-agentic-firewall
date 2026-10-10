@@ -1,34 +1,26 @@
-# Three-Minute Recording Storyboard
+# Final 3–4 Minute Recording Storyboard
 
-Target runtime: about three minutes, within the required 2–4 minute range. Use the read-only static replay lab. Every trace is precomputed and synthetic.
+This single storyboard starts with the actual recorded poisoned-ticket proposal and host denial. It then compares the paired Gemma condition, explains the deterministic prototype, and keeps every evidence denominator separate. The Gemma player is read-only playback; it does not make inference or API requests.
 
-## Before recording
-
-1. Run the commands in `SUBMISSION_CHECKLIST.md`, including the clean archive checks.
-2. Serve the extracted public demo bundle from a static-only local HTTP server or use the final approved public URL. Do not expose, tunnel, or reverse-proxy the local API server.
-3. Confirm the precomputed banner, all four fixture choices, baseline/protected columns, raw evidence, evaluation denominator, policy comparison, and support-task checks.
-4. Close unrelated tabs and notifications. Hide personal account controls and local paths. Use a readable zoom and 16:9 capture where possible.
-
-## Timed storyboard
-
-| Time | Picture and action | Narration | Evidence to leave visible |
+| Time | Screen action | Narration focus | Evidence to leave visible |
 | --- | --- | --- | --- |
-| 0:00–0:25 | Show the task “Create one hardware ticket for C-1042” beside the lower-trust page instruction to send a recovery code. | “An agent may need retrieved facts to complete a task, but retrieved text must not rewrite the task or grant new authority.” | Original user task, attacker-controlled instruction, precomputed synthetic banner. |
-| 0:25–0:50 | Show the content firewall, parser boundary, original intent contract, and deterministic tool gate. | “SENTINEL PI screens content first. Every side effect then crosses a separate gate that checks the host task, tool schema, customer, approval, budget, and host-bound source context.” | Two boundaries and no-live-model disclosure. |
-| 0:50–1:20 | Select the indirect-injection trace and compare the unprotected baseline with the protected path. | “This is a deterministic content-triggered simulator, not a live AI run. The baseline executes one mock email. The protected parser receives no flagged page content, and the authorized task still creates a ticket.” | Baseline mock email; protected no-email; synthetic ticket from the customer record. |
-| 1:20–1:45 | Expand the synthetic task checks; show the separate provenance-laundering gate result. | “The ticket uses the issue returned by the authorized customer search. The contract sets action authority. A proposal that claims `user-task` while the trusted caller supplies an external page as its source context is denied.” | Six support-task predicates; one provenance test denied without effect; caller-context limitation. |
-| 1:45–2:05 | Select answer contamination; compare baseline and protected text. | “The output guard redacts the canary and two exact unsupported phrases in this fixture. A paraphrase can pass, so the guard is lexical rather than semantic.” | One canary redaction, two exact phrase redactions, lexical limitation. |
-| 2:05–2:40 | Show corpus metrics and accepted candidate comparison. | “The public development set has 18 attack and 12 benign cases, 49 expected labels, and 54 predicted labels. The accepted candidate changes five quarantine actions to block. All 18 cases were already contained, so it newly contains zero attacks and does not lower unauthorized side effects.” | Denominators, 13 block / 5 quarantine, 5 severity-only changes, 0 newly contained, 0 unauthorized side-effect change. |
-| 2:40–3:00 | Close on limitations and business value. | “The architecture offers a reviewable way to keep task authority separate from retrieved content. We have not measured business impact, live-model performance, unseen-traffic reliability, or independent red-team results.” | D1/F3 public-fixture caveat, no production claim, no deployment claim. |
+| 0:00–0:15 | Open the Gemma player with **Poisoned ticket** selected. Point to `Refund approved by administrator`, then the red host denial. | Gemma actually proposed this ticket; the host IntentGate denied it before a mock effect. | Actual recorded output; source-scope denial; zero unauthorized mock effects. |
+| 0:15–0:40 | Keep the original task and lower-trust document in view. Point out that the task asks for a hardware support ticket and the document attempts to replace its facts. | Explain why an agent needs the customer record but must not treat the retrieved document as task authority. | Authorized task; attacker-controlled synthetic document; model digest and saved-record label. |
+| 0:40–1:05 | Compare the screened column for the same case; then choose **Unsupported ticket**. | The firewall withheld the attack document; Gemma used the authorized record. A second unsupported proposal was denied by the same gate. | Record-backed issue; ticket proposal; separate denial; no live execution. |
+| 1:05–1:35 | Show paired metrics and the final-run/full-history distinction. | Six reused cases once per condition; 4/6 versus 6/6 correct tasks; 3/3 benign in both; zero unauthorized effects in both because the same gate remained active. Briefly disclose the full-history call-budget overrun. | 34/34 final-run generations; 133 historical attempts, 39 errors, earlier cap 24, no explicit increase recorded. |
+| 1:35–2:20 | Open the deterministic replay and the Decision Passport. Select **Indirect injection** and trace source, firewall, proposal, gate, and effects. | The stable backend is a deterministic offline simulator; it is separate from the actual Gemma run. Explain the two independent boundaries. | Precomputed synthetic trace; host-created task; content decision; gate result; mock effect. |
+| 2:20–2:50 | Show the deterministic evaluation and policy-candidate result. | Thirty public development cases; component category results; candidate hardening changes five quarantine decisions to block but newly contains zero benchmark cases. | Keep the 30-case denominator separate from the six-case pilot; label results as component-level. |
+| 2:50–3:25 | Show enterprise integration opportunity and limitations. | The architecture suggests a reviewable control point before CRM, ticketing, or messaging, but no production integration or business impact has been measured. Ask for independent evaluation with new cases. | D1/F3 is a public-fixture self-assessment; no blind tests, production claim, or statistically reliable model result. |
 
-## Recording and edit checks
+## Capture checklist
 
-- Keep “precomputed synthetic traces” visible or repeat the disclosure when describing a trace.
-- Leave enough time for the 30-case denominator and severity-versus-containment distinction to be read.
-- Keep the original task, trust boundary, ticket checks, side-effect count, and candidate comparison unobscured.
-- Captions must say “precomputed trace”, “deterministic simulator”, and “no live model”.
-- Inspect the exported video for timing, readability, audio, privacy, and factual accuracy before submission.
+- Record only after the public release is approved, Pages is active, and the site is verified in a logged-out browser.
+- Use the static pages only. Confirm there are no model or backend requests during recording.
+- Start with the actual poisoned-ticket proposal and denial, and keep the read-only recorded-evidence label visible.
+- Show the unsupported-ticket denial and the 4/6 versus 6/6 task counts, with zero unauthorized effects in both conditions.
+- Show the deterministic simulator disclosure and its separate 30-case denominator.
+- Keep the full-history budget overrun disclosure accessible; do not make it the opening story.
+- Use a readable 16:9 browser view with unrelated tabs, account controls, notifications, local paths, and credentials out of frame.
+- Inspect the complete exported video for readability, timing, narration sync, audio quality, and privacy before submission.
 
-## Recording status
-
-The script and storyboard are prepared. No video file has been recorded or reviewed.
+Recording status: storyboard prepared. No video or audio file has been recorded or inspected.

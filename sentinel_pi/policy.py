@@ -110,6 +110,10 @@ class PolicyManager:
             "attack_containment_not_lower": candidate["contained_attack_rate"] >= baseline["contained_attack_rate"],
             "attack_escapes_not_higher": candidate["attack_escaped_cases"] <= baseline["attack_escaped_cases"],
             "policy_severity_increased": candidate["blocked_attack_rate"] > baseline["blocked_attack_rate"],
+            "policy_has_security_or_severity_improvement": (
+                security_improvement
+                or candidate["blocked_attack_rate"] > baseline["blocked_attack_rate"]
+            ),
             "benign_pass_not_lower": candidate["benign_pass_rate"] >= baseline["benign_pass_rate"],
             "false_positives_not_higher": candidate["false_positives"] <= baseline["false_positives"],
             "end_to_end_attack_outcomes_not_worse": (
@@ -123,7 +127,11 @@ class PolicyManager:
             ),
             "tool_gate_unchanged_and_safe": gate_invariant,
         }
-        accepted = all(checks.values())
+        accepted = all(
+            passed
+            for name, passed in checks.items()
+            if name != "policy_severity_increased"
+        )
         evidence: dict[str, Any] = {
             "candidate": patch.name,
             "accepted": accepted,

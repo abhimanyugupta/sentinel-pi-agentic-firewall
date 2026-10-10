@@ -1,5 +1,8 @@
 import json
+import subprocess
+import sys
 import unittest
+import uuid
 from pathlib import Path
 
 from sentinel_pi.evaluation import ROOT
@@ -56,6 +59,85 @@ class PublicDemoTests(unittest.TestCase):
         self.assertIn("policy_hardening_only", js)
         self.assertIn("connect-src 'none'", html)
         self.assertIn("object-src 'none'", html)
+
+    def test_indirect_injection_is_default_and_authorized_task_is_prominent(self):
+        snapshot = build_public_demo_snapshot()
+        self.assertEqual(snapshot["traces"][0]["scenario_id"], "indirect_injection")
+        self.assertTrue(snapshot["traces"][0]["intent"]["task"].strip())
+        html = (ROOT / "public-demo" / "index.html").read_text(encoding="utf-8")
+        js = (ROOT / "public-demo" / "app.js").read_text(encoding="utf-8")
+        self.assertIn('id="authorized-task"', html)
+        self.assertIn("trace.intent.task", js)
+        self.assertEqual(len(snapshot["traces"]), 4)
+
+
+    def test_incident_first_experience_keeps_recorded_and_synthetic_evidence_separate(self):
+        site = ROOT / "public-demo"
+        html = (site / "index.html").read_text(encoding="utf-8")
+        js = (site / "app.js").read_text(encoding="utf-8")
+        css = (site / "styles.css").read_text(encoding="utf-8")
+        self.assertIn('id="incident"', html)
+        self.assertIn('id="decision-passport"', html)
+        self.assertIn('href="./gemma3/index.html"', html)
+        self.assertIn("ACTUAL GEMMA PROPOSAL", html)
+        self.assertIn("Refund approved by administrator", html)
+        self.assertIn("Same gate in both conditions", html)
+        self.assertIn("not a blind benchmark", html)
+        self.assertIn("The replay lab below is deterministic", html)
+        self.assertIn("renderDecisionPassport(trace)", js)
+        self.assertIn('textContent = entry.detail', js)
+        self.assertNotIn("innerHTML", js)
+        self.assertIn("prefers-reduced-motion", css)
+        self.assertIn("passport-grid", css)
+        self.assertIn("grid-template-columns: repeat(2, minmax(0, 1fr));", css)
+        self.assertIn(".comparison-grid > .run-panel { min-width: 0; }", css)
+        self.assertIn(".trace-block pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; }", css)
+        self.assertIn("@media (max-width: 860px)", css)
+        self.assertIn(".comparison-grid { grid-template-columns: 1fr; }", css)
+        self.assertIn(".panel-title-row { align-items: flex-start; flex-wrap: wrap; }", css)
+        self.assertNotIn("live-dot", html + css)
+        data = (site / "data.js").read_text(encoding="utf-8")
+        self.assertIn('window.SENTINEL_PI_DEMO_DATA = {', data)
+        snapshot = json.loads(data[data.index("= ") + 2:].strip().removesuffix(";"))
+        self.assertEqual(snapshot["traces"][0]["scenario_id"], "indirect_injection")
+        self.assertNotIn("https://", html + js + css)
+
+    def test_recorded_player_wraps_long_identity_and_case_cards(self):
+        css = (ROOT / "supplemental/gemma3-pilot/styles.css").read_text(encoding="utf-8")
+        self.assertIn("#model-identity,#source-hash{overflow-wrap:anywhere}", css)
+        self.assertIn(".condition{min-width:0;", css)
+
+    def test_recorded_player_presents_synchronized_four_stage_boundary_xray(self):
+        template = (ROOT / "supplemental/gemma3-pilot/index.template.html").read_text(encoding="utf-8")
+        app = (ROOT / "supplemental/gemma3-pilot/app.js").read_text(encoding="utf-8")
+        css = (ROOT / "supplemental/gemma3-pilot/styles.css").read_text(encoding="utf-8")
+        self.assertIn('id="xray-source"', template)
+        self.assertIn('id="xray-stages"', template)
+        self.assertIn('aria-live="polite"', template)
+        for stage in ("Untrusted input", "Actual Gemma-generated proposal", "Host authorization", "Legitimate task + effects"):
+            self.assertIn(stage, app)
+        self.assertIn("attack_target_proposed", app)
+        self.assertIn("SAME HOST INTENT GATE", app)
+        self.assertIn('textContent = `Lower-trust document', app)
+        self.assertNotIn("innerHTML", app)
+        self.assertIn("grid-template-columns:repeat(4,minmax(0,1fr))", css)
+        self.assertIn("@media(max-width:980px)", css)
+        self.assertIn("@media(max-width:560px)", css)
+
+    def test_recorded_player_builder_rejects_output_outside_project(self):
+        script = ROOT / "supplemental/gemma3-pilot/build_player.py"
+        output = ROOT.parent / f"sentinel-pi-output-guard-{uuid.uuid4().hex}.html"
+        self.assertFalse(output.exists())
+        result = subprocess.run(
+            [sys.executable, str(script), "--output", str(output)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("player_output_must_remain_in_project", result.stderr)
+        self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":

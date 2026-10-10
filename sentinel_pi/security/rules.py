@@ -13,6 +13,28 @@ class Classifier(Protocol):
     def classify(self, prepared: PreparedContent) -> Classification: ...
 
 
+PASSWORD_RESET_LINK = re.compile(r"\bpassword reset link\b", re.I)
+SENSITIVE_TERMS = re.compile(
+    r"\b(secret|token|password|api[ _-]?key|credential|private data|canary|recovery code|"
+    r"auth(?:entication)? token|session cookie|one.time passcode|otp|security code)\b",
+    re.I,
+)
+
+
+def _is_password_reset_link_reference(text: str, match: re.Match[str]) -> bool:
+    """Ignore only credential matches whose sensitive target is the reset-link label itself."""
+    terms = tuple(SENSITIVE_TERMS.finditer(match.group(0)))
+    if not terms:
+        return False
+    for term in terms:
+        if term.group(0).casefold() != "password":
+            return False
+        target_start = match.start() + term.start()
+        if PASSWORD_RESET_LINK.match(text, target_start) is None:
+            return False
+    return True
+
+
 PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     "instruction_override": (
         re.compile(r"\b(ignore|disregard|override|forget|bypass)\b.{0,90}\b(previous|earlier|system|developer|user|all|other)?\s*(instructions?|rules?|polic(?:y|ies)|prompt)\b", re.I),
@@ -62,8 +84,7 @@ class RuleClassifier:
                     ):
                         continue
                     if category in ("credential_theft", "secret_extraction"):
-                        window = prepared.normalized_text[max(0, match.start() - 24):min(len(prepared.normalized_text), match.end() + 48)]
-                        if re.search(r"\bpassword reset(?: link)?\b", window, re.I):
+                        if _is_password_reset_link_reference(prepared.normalized_text, match):
                             continue
                     try:
                         start, end = prepared.original_span(match.start(), match.end())

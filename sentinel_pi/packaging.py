@@ -16,13 +16,36 @@ ROOT_FILES = (
     "README.md",
     "SPEC.md",
     "requirements-release.txt",
-    "output/pdf/SENTINEL_PI_Pitch.pdf",
+    "output/pdf/SENTINEL_PI_Pitch_Final.pdf",
 )
-TREE_DIRS = ("sentinel_pi", "tests", "fixtures", "web", "docs", "evidence", "public-demo")
+TREE_DIRS = ("sentinel_pi", "tests", "fixtures", "web", "docs", "evidence", "public-demo", "supplemental")
 TREE_DIRS = TREE_DIRS + ("submission",)
-PRIVATE_REVIEW_REPORTS = {"docs/INDEPENDENT_RELEASE_REVIEW.md"}
-PPTX_PATHS = {"submission/SENTINEL_PI_Pitch.pptx"}
-PDF_PATHS = {"output/pdf/SENTINEL_PI_Pitch.pdf"}
+EXPERIMENT_FILES = (
+    "experiments/model_pilot/README.md",
+    "experiments/model_pilot/__init__.py",
+    "experiments/model_pilot/__main__.py",
+    "experiments/model_pilot/audit.py",
+    "experiments/model_pilot/BUDGET_APPROVALS.json",
+    "experiments/model_pilot/BUDGET_POLICY.json",
+    "experiments/model_pilot/BUDGET_STATE.json",
+    "experiments/model_pilot/budget.py",
+    "experiments/model_pilot/cases.json",
+    "experiments/model_pilot/ollama_local.py",
+    "experiments/model_pilot/pilot.py",
+    "experiments/model_pilot/tests/test_budget.py",
+    "experiments/model_pilot/tests/test_pilot.py",
+)
+GENERATED_DUPLICATES = {"supplemental/gemma3-pilot/player/index.html"}
+PRIVATE_REVIEW_REPORTS = {
+    "docs/INDEPENDENT_RELEASE_REVIEW.md",
+    "docs/EXTERNAL_ADVERSARIAL_REVIEW.md",
+}
+PPTX_PATHS = {"submission/SENTINEL_PI_Pitch_Final.pptx"}
+PDF_PATHS = {"output/pdf/SENTINEL_PI_Pitch_Final.pdf"}
+LEGACY_PITCH_BACKUPS = {
+    "submission/SENTINEL_PI_Pitch.pptx",
+    "submission/SENTINEL_PI_Pitch_Updated.pptx",
+}
 PUBLIC_DEMO_FILES = (
     ".nojekyll",
     "README.md",
@@ -30,6 +53,7 @@ PUBLIC_DEMO_FILES = (
     "app.js",
     "styles.css",
     "data.js",
+    "gemma3/index.html",
 )
 FORBIDDEN_PATH_PARTS = {".git", ".env", "private", "holdout", "blind", "runtime", "credentials", "secrets", "__pycache__"}
 SECRET_PATTERNS = (
@@ -159,6 +183,13 @@ def _validate_public_demo_files() -> dict[str, bytes]:
         raise PackageAuditError("Static demo data is missing its version or simulator disclosure.")
     if b"window.SENTINEL_PI_DEMO_DATA = null" in payloads["data.js"]:
         raise PackageAuditError("Static demo data has not been generated from recorded traces.")
+    model_page = payloads["gemma3/index.html"].decode("utf-8")
+    if "connect-src 'none'" not in model_page or "PRECOMPUTED MODEL RECORDING" not in model_page:
+        raise PackageAuditError("Recorded model page must be labeled and forbid runtime connections.")
+    if any(token in model_page for token in ("fetch(", "XMLHttpRequest", "WebSocket(", "sendBeacon(")):
+        raise PackageAuditError("Recorded model page contains a runtime network API.")
+    if "../index.html" not in model_page:
+        raise PackageAuditError("Recorded model page is missing its relative navigation link.")
     return payloads
 
 
@@ -230,6 +261,7 @@ def _safe_relative(path: Path) -> str:
 
 def _collect_files() -> list[tuple[str, Path]]:
     candidates = [ROOT / name for name in ROOT_FILES]
+    candidates.extend(ROOT / name for name in EXPERIMENT_FILES)
     for directory in TREE_DIRS:
         root = ROOT / directory
         if root.exists():
@@ -243,8 +275,12 @@ def _collect_files() -> list[tuple[str, Path]]:
         # It records the export checksum, so including it would make that checksum self-referential.
         if relative in PRIVATE_REVIEW_REPORTS:
             continue
+        if relative in GENERATED_DUPLICATES:
+            continue
         parts = {part.casefold() for part in Path(relative).parts}
         if parts.intersection(FORBIDDEN_PATH_PARTS):
+            continue
+        if relative in LEGACY_PITCH_BACKUPS:
             continue
         if relative.startswith("submission/") and relative not in PPTX_PATHS:
             raise PackageAuditError(f"Submission directory contains a file outside its allowlist: {relative}")

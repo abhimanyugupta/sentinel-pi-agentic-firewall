@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "authorization_audit": {
+    "generation_attempt_limit": 24,
+    "later_explicit_increase_found": false,
+    "basis": "Reviewed pilot authorization messages approve local Gemma 3 at zero provider spend, but do not state a higher generation-call ceiling."
+  },
+  "recorded_usage": {
+    "generation_attempts": 133,
+    "returned_generations": 94,
+    "provider_errors": 39,
+    "generation_attempts_over_limit": 109,
+    "warmup_requests_separate": 2,
+    "runs": {
+      "run-001": 12,
+      "run-002": 12,
+      "run-003": 12,
+      "run-004": 3,
+      "run-006": 12,
+      "run-007": 12,
+      "run-008": 36,
+      "run-010": 34
+    }
+  },
+  "disposition": "process_control_failure",
+  "cause": "Per-run limits existed without persistent cumulative accounting or a cap-increase approval gate.",
+  "safeguard": {
+    "generation_limit": 24,
+    "warmup_limit": 0,
+    "current_calls_blocked": true,
+    "requires_separate_interactive_human_approval": true,
+    "calls_in_this_release_preparation": 0
+  }
+}

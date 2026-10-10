@@ -48,6 +48,19 @@ class Firewall:
 
     def inspect(self, envelope: ContentEnvelope) -> FirewallDecision:
         prepared = self.preprocessor.prepare(envelope)
+        if not prepared.encoded_inspection.complete:
+            reasons = ", ".join(prepared.encoded_inspection.reasons)
+            return FirewallDecision(
+                attack_types=(),
+                suspicious_spans=(),
+                risk_score=0.72,
+                action="quarantine",
+                rationale=(
+                    "encoded_inspection_incomplete: "
+                    f"{reasons}. Content was quarantined because the encoded-content inspection budget was exceeded.",
+                ),
+                provenance=prepared.provenance,
+            )
         try:
             classification = parse_classification(self.classifier.classify(prepared), len(envelope.content))
             if self.policy.literal_indicators:

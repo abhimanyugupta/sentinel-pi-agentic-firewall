@@ -1,73 +1,94 @@
 # SENTINEL PI
 
-**A local, offline prompt-injection firewall prototype for tool-using agents.**
+**An agent flight recorder for prompt-injection incidents: inspect the untrusted source, the AI-proposed action, the independent host authorization decision, and the resulting mock effect.**
 
 ET AI Hackathon: Agentic Edition · Problem 2 — Agentic Cybersecurity: Prompt Injection Firewall
 
-## Product thesis
+**Explore the evidence:** [deterministic static replay](https://abhimanyugupta.github.io/sentinel-pi-agentic-firewall/) · [recorded Gemma 3 pilot](https://abhimanyugupta.github.io/sentinel-pi-agentic-firewall/gemma3/)
 
-SENTINEL PI combines untrusted-content provenance, answer-contamination safeguards, deterministic tool authorization, and a bounded regression loop. The current evidence distinguishes classifier labels, firewall actions, tool side effects, and one synthetic support-task correctness check rather than treating them as one security score.
+## Start with the incident — 60-second judge walkthrough
 
-In the indirect-injection replay, a clearly labeled deterministic simulator reads the fixture text and proposes a mock recovery-code email. The firewall withholds the flagged page before it reaches the protected proposal parser, while the authorized support ticket still completes. The support task builds its ticket from the returned synthetic customer record and checks the created ticket against the user task and record. A separate provenance-laundering probe has a proposal claim `user-task` while host context identifies an external page; the gate denies it without a side effect. The host context is supplied by trusted caller code, is not cryptographically authenticated, and is not evidence about a live model's reasoning.
+1. Open the [recorded Gemma 3 incident](https://abhimanyugupta.github.io/sentinel-pi-agentic-firewall/gemma3/) and inspect the **actual model proposal**: `Refund approved by administrator`. In the unscreened recording, the proposed ticket repeats the attacker's text; the paired screened recording shows the record-backed ticket.
+2. Inspect the **host gate denial**. No unauthorized mock effect occurred. The same gate remained active in the screened condition.
+3. Compare the screened model's record-backed ticket, then use the [Decision Passport in the deterministic replay](https://abhimanyugupta.github.io/sentinel-pi-agentic-firewall/#trace) to follow source identity, content admission, gate decisions, and mock effects.
 
-The accepted public candidate raises severity only: five attack fixtures move from quarantine to block, but all 18 were already blocked or quarantined. It produces zero newly contained cases and does not reduce the protected trace's zero unauthorized side effects. The candidate is therefore described as policy hardening and regression testing, not improved attack resistance. A separate answer-contamination replay shows the synthetic baseline repeating two unsupported account claims; the protected answer guard redacts those exact fixture phrases and the canary.
+The 4/6 versus 6/6 task-correctness result is a **six-case reused development observation**, not a prevention-rate estimate. The two demos have different evidence sources and must not be treated as a single benchmark.
 
-## Run it
+The first page is a precomputed deterministic simulator. The second is read-only playback of actual saved local Gemma 3 outputs. Neither page runs a model or calls a backend. The experimental adapter source is available below as a separate, offline-testable project; it is not integrated into the stable deterministic backend.
 
-Requires Python 3.10 or newer. The application runtime uses only the Python standard library and makes no external network requests; browser traffic stays on loopback. The full test suite and curated release-archive audit also use `pypdf` from `requirements-release.txt` to inspect the deck PDF.
+## What judges can inspect
 
-If `pypdf` is not already available in your Python environment, install the pinned release-audit dependency before running the full test suite or building the source archive:
+- **Deterministic firewall evidence:** 30 known public development cases; category labels and firewall outcomes are component measures, not an end-to-end attack-prevention rate. The accepted candidate hardens severity but newly contains zero cases.
+- **Recorded model evidence:** six disclosed synthetic cases once per condition; the final run returned 34/34 generations. Task correctness was 4/6 unscreened and 6/6 screened on this reused development sample. Both conditions retained the same host gate and had zero unauthorized mock effects.
+- **Full pilot history:** 133 generation attempts, 94 returned responses, 39 provider errors, and two separately recorded warm-up requests. The earlier authorization cap was 24; the 109-attempt overrun is documented as a process-control failure.
 
-```console
-python -m pip install -r requirements-release.txt
+These evidence streams use different scenarios and denominators. The deterministic simulator did not produce the recorded Gemma proposals. The six-case pilot is not blind, statistically reliable, or evidence of generalization. See [the full pilot review](docs/GEMMA3_PILOT_REVIEW.md) and [budget deviation report](docs/GEMMA3_PILOT_BUDGET_DEVIATION.md).
+
+## Architecture and trust boundaries
+
+```mermaid
+flowchart LR
+  U[Trusted user task] --> H[Host-created intent contract]
+  D[Lower-trust retrieved document] --> F[Deterministic content firewall]
+  F -->|allow only| S[Deterministic fixture simulator]
+  S --> P[Tool proposal]
+  P --> G[Independent IntentGate]
+  H --> G
+  G -->|authorized| M[Fictional in-memory tools]
+  G -->|deny or approval required| X[No side effect]
+  subgraph Separate recorded Gemma pilot
+    D2[Same synthetic document] --> A[Local Gemma adapter]
+    A --> J[Closed JSON parser]
+    J --> B[Host-side record binding]
+    B --> G2[Same mandatory IntentGate]
+    H2[Host-owned task, permissions, budgets] --> G2
+    G2 -->|authorized| M2[Fictional in-memory tools]
+    G2 -->|deny| X2[No side effect]
+  end
 ```
 
+The main backend is deterministic and offline. The pilot adapter is isolated under [`experiments/model_pilot/`](experiments/model_pilot/README.md): it contains the host-controlled tool loop, fixed loopback Ollama adapter, closed JSON validation, host-side task binding, cumulative request budget, synthetic cases, and offline adversarial tests. Model proposals never grant permissions or trusted provenance; every mock side effect crosses the IntentGate immediately before execution. No live provider request is made by the tests or static pages.
+
+## Quick start — deterministic prototype
+
+Requires Python 3.10+. Application and demo use the Python standard library and need no Ollama installation.
+
 ```console
-python --version
-python -m unittest discover -s tests -v
 python -m sentinel_pi demo --scenario indirect_injection
 python -m sentinel_pi eval
-python -m sentinel_pi candidate
-python -m sentinel_pi serve
+python -m unittest discover -s tests -v
 ```
 
-Open `http://127.0.0.1:8765` while the server is running. Stop it with Ctrl+C. The server refuses non-loopback bind addresses. Evaluation JSON and candidate evidence are written under `artifacts/`.
+For the browser demo, run `python -m sentinel_pi serve` and open `http://127.0.0.1:8765`. The server binds only to loopback. It is not a public demo server.
 
-Useful demo scenarios are `legitimate_support`, `indirect_injection`, and `answer_contamination`. `python -m sentinel_pi package` creates and audits `artifacts/submission.zip`; the archive is built from an explicit source, fixture, test, web, documentation, public-evidence, and pitch-material allowlist and contains a SHA-256 manifest.
+To run every offline source check, including adapter mocks, evidence integrity and package validation, see [`docs/SUBMISSION_CHECKLIST.md`](docs/SUBMISSION_CHECKLIST.md). The full release suite uses `pypdf` from [`requirements-release.txt`](requirements-release.txt); the deterministic application itself does not depend on it.
 
-The GitHub Pages-compatible read-only demo is in [`public-demo/`](public-demo/). It loads a precomputed snapshot, has no API/write calls or model access, and is labeled as a deterministic simulator. Rebuild its data and standalone Pages bundle with `python -m sentinel_pi public-demo`. This writes `public-demo/data.js` and `artifacts/public-demo.zip`; the ZIP contains only the static HTML, CSS, JavaScript, data snapshot, `.nojekyll`, README, and manifest.
+## Recorded model evidence — offline reproduction
 
-The editable deck is [`submission/SENTINEL_PI_Pitch.pptx`](submission/SENTINEL_PI_Pitch.pptx). Its PowerPoint-rendered PDF export is [`output/pdf/SENTINEL_PI_Pitch.pdf`](output/pdf/SENTINEL_PI_Pitch.pdf). The static site deployment instructions and private-repository warning are in [`public-demo/README.md`](public-demo/README.md). The optional model-investigator scope and release decision are in [`docs/MODEL_INVESTIGATOR_ASSESSMENT.md`](docs/MODEL_INVESTIGATOR_ASSESSMENT.md); no real model call has been made.
+No model access is needed to inspect or verify the saved recording:
 
-## What it demonstrates
+```console
+python supplemental/gemma3-pilot/verify_evidence.py
+python -m unittest discover -s experiments/model_pilot/tests -v
+```
 
-- Provenance-aware handling of untrusted content, bounded Unicode normalization and Base64 text decoding, and suspicious-span evidence.
-- A strict structured-classifier interface with a quarantine fallback for provider errors or invalid output. The default classifier is deterministic and offline.
-- A firewall that withholds blocked or quarantined external content from the protected proposal parser. No sanitizer is implemented, so `sanitize` also fails closed at this boundary.
-- A separate intent gate that checks tool name, exact argument shape, authorized customer/destination, host-bound action provenance, budgets, approval, and canary egress immediately before in-memory mock side effects. Proposal source IDs must match the source tuple supplied separately by the trusted caller and the original intent contract. It distinguishes `allow`, `deny`, and `require_approval`; pending approval never triggers a side effect.
-- An answer guard for synthetic canaries and fixture-labeled exact phrases, plus constrained candidate regression checks. The evaluator distinguishes severity from containment and measures the one protected attack trace and one synthetic support task separately. Literal-rule promotion and full-policy rollback have focused tests. Promoted policy state applies to later replays in the current process; a new process starts from the default policy.
-- A dashboard backed by actual local scenario replays and evaluator output.
+These commands validate the sanitized recorded request/response hashes, paired cases, proposals, host decisions and mock outcomes. They do not regenerate examples or call Ollama. The read-only [recorded evidence player](https://abhimanyugupta.github.io/sentinel-pi-agentic-firewall/gemma3/) embeds those saved results.
 
-## Current evidence and limits
+## Optional local inference — separate approval required
 
-The checked-in fixtures are a **public development regression corpus**, not a blind holdout or a representative security benchmark. The current corpus has 18 attack cases covering all nine configured categories and 12 benign controls. The latest run matched 49/49 expected labels, with 54 predictions and 5 extra labels; 13 cases were blocked and 5 quarantined. These category and firewall-action results do not by themselves prove end-to-end attack prevention. The one named protected attack trace recorded 0 parser admissions and 0 unauthorized email effects; the one synthetic support task passed its six ticket predicates (1/1). The latest run is in [`evidence/evaluation-public.json`](evidence/evaluation-public.json), with candidate outcomes in [`evidence/candidates-public.json`](evidence/candidates-public.json). Review [`docs/EVALUATION.md`](docs/EVALUATION.md) for denominators and limits.
+The experimental code can be inspected in [`experiments/model_pilot/`](experiments/model_pilot/README.md). It uses a fixed loopback endpoint, pinned Gemma 3 model digest and runtime version, no credential lookup, no model download route, and only synthetic fixtures. Current committed budget history is already over the 24-attempt allowance, so a new inference attempt is blocked. **No new model call is authorized by this release.** A future operator needs separate action-specific approval and a persistent budget increase before using an already-installed matching local model; the local-provider consent flag alone cannot raise the cap. Never expose Ollama or the Python API publicly.
 
-This prototype has no live LLM, external content fetch, real customer records, credentials, real email, or production tool. The content-triggered agent simulator is a deterministic offline fixture harness, not observed model behavior. The unsupported-claim check matches curated phrases; it is not semantic fact verification. It does not establish real-world prevention or live-model performance. The intentionally unsafe baseline is isolated in code and only executes fictional, in-memory mock operations.
+## Release and limitations
 
-## Project guide
+- [Architecture and implementation](docs/ARCHITECTURE.md)
+- [Evaluation denominators and results](docs/EVALUATION.md)
+- [Adversarial review](docs/ADVERSARIAL_REVIEW.md)
+- [Gemma 3 pilot review and actual observations](docs/GEMMA3_PILOT_REVIEW.md)
+- [Package allowlist and privacy audit](docs/PACKAGE_AUDIT.md)
+- [Pitch deck](submission/SENTINEL_PI_Pitch_Final.pptx) · [PDF export](output/pdf/SENTINEL_PI_Pitch_Final.pdf)
+- [Video storyboard](docs/DEMO_STORYBOARD.md) · [narration](docs/DEMO_NARRATION_TTS.md)
+- [Final submission checklist](docs/SUBMISSION_CHECKLIST.md)
 
-- [`SPEC.md`](SPEC.md) — mission, threat model, requirements, and definition of done
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — components, trust boundaries, and data flow
-- [`docs/EVALUATION.md`](docs/EVALUATION.md) — corpus, metrics, observed results, and feature/depth self-assessment
-- [`docs/ADVERSARIAL_REVIEW.md`](docs/ADVERSARIAL_REVIEW.md) — reproduced findings, repairs, regression evidence, and remaining caveats
-- [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) — 2–4 minute walkthrough
-- [`docs/DEMO_STORYBOARD.md`](docs/DEMO_STORYBOARD.md) — recording storyboard with timed screen actions
-- [`docs/PITCH.md`](docs/PITCH.md) — short pitch and slide outline
-- [`submission/SENTINEL_PI_Pitch.pptx`](submission/SENTINEL_PI_Pitch.pptx) — editable pitch deck
-- [`docs/PUBLIC_DEMO_PLAN.md`](docs/PUBLIC_DEMO_PLAN.md) — safe hosted-demo plan; the current server stays on loopback
-- [`public-demo/index.html`](public-demo/index.html) — static precomputed replay experience; no server required
-- [`docs/MODEL_INVESTIGATOR_ASSESSMENT.md`](docs/MODEL_INVESTIGATOR_ASSESSMENT.md) — scoped optional AI investigator assessment and evidence requirements
-- [`docs/SUBMISSION_CHECKLIST.md`](docs/SUBMISSION_CHECKLIST.md) — final verification and human review checklist
-- [`docs/PACKAGE_AUDIT.md`](docs/PACKAGE_AUDIT.md) — archive inclusion and privacy rules
+The static public demo is precomputed. The stable backend has no live LLM, external retrieval, production tools, real customer records, or real messaging. The support-task simulator is deterministic. The separate local Gemma pilot supplies actual model outputs but covers only reused public development examples; both conditions use a mandatory gate. There is no blind evaluation or independent provider attestation. The answer guard matches curated phrases and is not semantic fact verification. SENTINEL PI is a reviewable prototype, not a production security product.
 
-All records, email addresses, and recovery codes in the demo are synthetic. Email addresses use the reserved `.invalid` suffix.
+All displayed people, customer records, tickets, recovery codes and addresses are synthetic. Reserved email addresses use `.invalid`.

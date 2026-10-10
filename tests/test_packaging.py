@@ -7,6 +7,7 @@ from pathlib import Path
 from pypdf import PdfReader
 
 from sentinel_pi.packaging import (
+    EXPERIMENT_FILES,
     ROOT,
     PackageAuditError,
     _validate_contents,
@@ -34,10 +35,27 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("fixtures/dev_scenarios.jsonl", names)
         self.assertIn("evidence/evaluation-public.json", names)
         self.assertIn("evidence/candidates-public.json", names)
-        self.assertIn("submission/SENTINEL_PI_Pitch.pptx", names)
-        self.assertIn("output/pdf/SENTINEL_PI_Pitch.pdf", names)
+        self.assertIn("submission/SENTINEL_PI_Pitch_Final.pptx", names)
+        self.assertIn("output/pdf/SENTINEL_PI_Pitch_Final.pdf", names)
+        self.assertNotIn("submission/SENTINEL_PI_Pitch.pptx", names)
+        self.assertNotIn("submission/SENTINEL_PI_Pitch_Updated.pptx", names)
         self.assertIn("public-demo/index.html", names)
         self.assertIn("public-demo/data.js", names)
+        self.assertIn("public-demo/gemma3/index.html", names)
+        self.assertIn("supplemental/gemma3-pilot/evidence.json", names)
+        self.assertIn("supplemental/gemma3-pilot/verify_evidence.py", names)
+        self.assertIn("supplemental/gemma3-pilot/GEMMA3_PILOT_REVIEW.md", names)
+        self.assertEqual({name for name in names if name.startswith("experiments/model_pilot/")}, set(EXPERIMENT_FILES))
+        self.assertIn("experiments/model_pilot/ollama_local.py", names)
+        self.assertIn("experiments/model_pilot/pilot.py", names)
+        self.assertIn("experiments/model_pilot/tests/test_pilot.py", names)
+        self.assertIn("experiments/model_pilot/tests/test_budget.py", names)
+        self.assertIn("experiments/model_pilot/cases.json", names)
+        self.assertIn("supplemental/gemma3-pilot/evidence.json", names)
+        self.assertNotIn("experiments/model_pilot/evidence/run-010.json", names)
+        self.assertNotIn("experiments/model_pilot/evidence/run-008.json", names)
+        self.assertNotIn("experiments/model_pilot/presentation/preview.png", names)
+        self.assertNotIn("supplemental/gemma3-pilot/player/index.html", names)
         self.assertIn("MANIFEST.sha256", names)
         self.assertNotIn("PLAN.md", names)
         self.assertNotIn("STATUS.md", names)
@@ -45,23 +63,55 @@ class PackagingTests(unittest.TestCase):
         self.assertNotIn("AGENTS.md", names)
         self.assertNotIn("WORKING.md", names)
         self.assertNotIn("docs/INDEPENDENT_RELEASE_REVIEW.md", names)
+        self.assertNotIn("docs/EXTERNAL_ADVERSARIAL_REVIEW.md", names)
         self.assertFalse(any(name.startswith("artifacts/") for name in names))
+        self.assertFalse(any(name.startswith("experiments/model_pilot/evidence/") for name in names))
+        self.assertFalse(any(name.startswith("experiments/model_pilot/presentation/") for name in names))
         self.assertFalse(any(".git" in name.split("/") for name in names))
         self.assertFalse(any("holdout" in name.casefold() or "private" in name.casefold() for name in names))
         with zipfile.ZipFile(second) as archive:
-            deck = zipfile.ZipFile(BytesIO(archive.read("submission/SENTINEL_PI_Pitch.pptx")))
+            deck = zipfile.ZipFile(BytesIO(archive.read("submission/SENTINEL_PI_Pitch_Final.pptx")))
             self.assertIn("ppt/presentation.xml", deck.namelist())
-            self.assertEqual(len([n for n in deck.namelist() if n.startswith("ppt/slides/slide") and n.endswith(".xml")]), 9)
-            pdf = PdfReader(BytesIO(archive.read("output/pdf/SENTINEL_PI_Pitch.pdf")), strict=True)
+            slide_parts = [n for n in deck.namelist() if n.startswith("ppt/slides/slide") and n.endswith(".xml")]
+            self.assertEqual(len(slide_parts), 9)
+            slide_text = "".join(
+                deck.read("ppt/slides/slide9.xml").decode("utf-8").split("<a:t>")[1:]
+            ).casefold()
+            self.assertIn("public replay is static and read-only", slide_text)
+            self.assertIn("109 over", slide_text)
+            self.assertIn("94 returned", slide_text)
+            self.assertIn("39 errors", slide_text)
+            slide4_text = "".join(
+                deck.read("ppt/slides/slide4.xml").decode("utf-8").split("<a:t>")[1:]
+            ).casefold()
+            self.assertIn("34/34 generations returned", slide4_text)
+            self.assertIn("6 cases per condition", slide4_text)
+            self.assertNotIn("no public demo is deployed", slide_text)
+            pdf = PdfReader(BytesIO(archive.read("output/pdf/SENTINEL_PI_Pitch_Final.pdf")), strict=True)
             self.assertEqual(len(pdf.pages), 9)
 
     def test_static_pages_archive_is_minimal_and_manifested(self):
         archive_path = build_public_demo_archive()
         with zipfile.ZipFile(archive_path) as archive:
             names = set(archive.namelist())
+            model_page = archive.read("gemma3/index.html").decode("utf-8")
         self.assertEqual(names, {
-            ".nojekyll", "README.md", "index.html", "app.js", "styles.css", "data.js", "MANIFEST.sha256"
+            ".nojekyll", "README.md", "index.html", "app.js", "styles.css", "data.js",
+            "gemma3/index.html", "MANIFEST.sha256"
         })
+        lowered = model_page.casefold()
+        self.assertIn("precomputed model recording", lowered)
+        self.assertIn("recorded local ollama options", lowered)
+        for option, value in (("temperature", 0), ("seed", 42), ("num_predict", 384),
+                              ("num_ctx", 2048), ("num_gpu", 1), ("num_batch", 128)):
+            self.assertIn(option, lowered)
+            self.assertIn(f'"{option}":{value}', lowered)
+        self.assertIn("connect-src 'none'", lowered)
+        self.assertIn("textcontent", lowered)
+        self.assertNotIn("innerhtml", lowered)
+        self.assertNotIn("fetch(", lowered)
+        self.assertNotIn("xmlhttprequest", lowered)
+        self.assertNotIn("websocket(", lowered)
 
     def test_pdf_scanner_rejects_real_email_in_metadata(self):
         from pypdf import PdfWriter
@@ -77,7 +127,7 @@ class PackagingTests(unittest.TestCase):
             with sample.open("wb") as handle:
                 writer.write(handle)
             with self.assertRaises(PackageAuditError):
-                _validate_contents([("output/pdf/SENTINEL_PI_Pitch.pdf", sample)])
+                _validate_contents([("output/pdf/SENTINEL_PI_Pitch_Final.pdf", sample)])
 
     def test_archive_output_cannot_escape_project(self):
         with self.assertRaises(PackageAuditError):
@@ -111,7 +161,7 @@ class PackagingTests(unittest.TestCase):
                     '<Relationships><Relationship TargetMode="External" Target="https://example.invalid" /></Relationships>',
                 )
             with self.assertRaises(PackageAuditError):
-                _validate_contents([("submission/SENTINEL_PI_Pitch.pptx", sample)])
+                _validate_contents([("submission/SENTINEL_PI_Pitch_Final.pptx", sample)])
 
 
 if __name__ == "__main__":

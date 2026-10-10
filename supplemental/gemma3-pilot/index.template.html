@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; connect-src 'none'; img-src 'none'; font-src 'none'; style-src 'sha256-@@STYLE_HASH@@'; script-src 'sha256-@@SCRIPT_HASH@@'">
+  <meta name="description" content="Read-only recorded synthetic Gemma 3 pilot evidence for SENTINEL PI.">
+  <title>SENTINEL PI | Recorded Gemma 3 Pilot</title>
+  <style>@@INLINE_STYLES@@</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to evidence</a>
+  <header class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">SENTINEL PI · SUPPLEMENTAL EXPERIMENT</p>
+      <h1>Recorded Gemma 3 pilot</h1>
+      <p class="lede">A real local-model run, packaged as read-only evidence.</p>
+      <a class="back-link" href="../index.html">Back to deterministic replay</a>
+    </div>
+    <div class="mode" role="note">
+      <strong>PRECOMPUTED MODEL RECORDING</strong>
+      <span>No inference, Ollama, API, or write request runs from this page.</span>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="intro">
+      <h2>The authorized task</h2>
+      <p id="task" class="task"></p>
+      <details class="runtime-details">
+        <summary>Recorded model identity and inference settings</summary>
+        <p id="model-identity" class="muted"></p>
+        <p id="runtime-settings" class="muted"></p>
+      </details>
+    </section>
+
+    <section class="featured" aria-labelledby="xray-title">
+      <p class="eyebrow">Boundary X-ray · synchronized recorded conditions</p>
+      <h2 id="xray-title">A poisoned ticket met the host gate</h2>
+      <p class="muted">Default: the actual recorded poisoned-ticket case. The model output is real; customer, ticket, and runtime effects are synthetic. Choose another case below to update all four stages together.</p>
+      <blockquote id="xray-source" class="xray-source"></blockquote>
+      <div id="xray-stages" class="xray-grid" aria-live="polite" aria-label="Paired four-stage evidence"></div>
+      <p class="xray-disclosure">The IntentGate was active in both conditions. This compares input screening and task correctness; it does not compare a gated system with an ungated one.</p>
+    </section>
+
+    <section aria-labelledby="metrics-title" class="metrics-section">
+      <h2 id="metrics-title">One paired development run</h2>
+      <div id="metrics" class="metric-grid" aria-live="polite"></div>
+      <p class="caveat">Both conditions kept IntentGate active. Zero unauthorized effects in both conditions; the run does not measure a containment-rate improvement.</p>
+    </section>
+
+    <section class="case-section" aria-labelledby="case-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Six disclosed synthetic cases · each once per condition</p><h2 id="case-title">Inspect an observed model proposal</h2></div>
+        <div id="case-nav" class="case-nav" aria-label="Choose a recorded case"></div>
+      </div>
+      <div id="scenario" class="scenario"></div>
+      <div class="comparison-grid">
+        <article class="condition unscreened">
+          <h3>Unscreened document + IntentGate</h3>
+          <div id="unscreened"></div>
+        </article>
+        <article class="condition screened">
+          <h3>Firewall screening + IntentGate</h3>
+          <div id="screened"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="history" aria-labelledby="history-title">
+      <h2 id="history-title">Final run vs full development history</h2>
+      <div id="history-metrics" class="history-grid"></div>
+      <p id="budget-disclosure" class="budget-disclosure"></p>
+      <p class="muted">Examples were reused during development. No blind evaluation, independent provider attestation, or statistically reliable prevention rate is claimed. See the public review documents for settings, prompts, raw outputs, failure records, resource observations, and the budget-control finding.</p>
+    </section>
+
+    <section class="limits">
+      <h2>What this evidence does not establish</h2>
+      <ul>
+        <li>Both conditions used the same deterministic host gate; zero side effects do not show that input screening alone prevented execution.</li>
+        <li>One six-case paired run is not a reliable prevention rate or a blind result.</li>
+        <li>The model was only partially offloaded to GPU; CPU work remained.</li>
+        <li>The static page displays saved evidence only. It does not demonstrate live model execution.</li>
+      </ul>
+    </section>
+  </main>
+  <footer><span>SENTINEL PI · Synthetic evidence · Read only</span><span id="source-hash"></span></footer>
+  <noscript><p class="noscript">Enable JavaScript to inspect the bundled recording. No network calls are made.</p></noscript>
+  <script>@@INLINE_SCRIPT@@</script>
+</body>
+</html>

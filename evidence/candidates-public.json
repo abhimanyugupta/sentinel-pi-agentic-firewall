@@ -10,6 +10,7 @@
       "attack_containment_not_lower": true,
       "attack_escapes_not_higher": true,
       "policy_severity_increased": true,
+      "policy_has_security_or_severity_improvement": true,
       "benign_pass_not_lower": true,
       "false_positives_not_higher": true,
       "end_to_end_attack_outcomes_not_worse": true,
@@ -167,6 +168,7 @@
       "attack_containment_not_lower": true,
       "attack_escapes_not_higher": true,
       "policy_severity_increased": false,
+      "policy_has_security_or_severity_improvement": false,
       "benign_pass_not_lower": true,
       "false_positives_not_higher": true,
       "end_to_end_attack_outcomes_not_worse": true,
@@ -307,7 +309,7 @@
     "tool_gate_invariant": true,
     "public_development_cases_only": true,
     "active_policy_before": "policy-v2",
-    "reason": "Candidate failed: policy_severity_increased"
+    "reason": "Candidate failed: policy_severity_increased, policy_has_security_or_severity_improvement"
   },
   "unauthorized_schema_candidate": {
     "accepted": false,
@@ -364,6 +366,7 @@
             "attack_containment_not_lower": true,
             "attack_escapes_not_higher": true,
             "policy_severity_increased": true,
+            "policy_has_security_or_severity_improvement": true,
             "benign_pass_not_lower": true,
             "false_positives_not_higher": true,
             "end_to_end_attack_outcomes_not_worse": true,
@@ -524,6 +527,7 @@
           "attack_containment_not_lower": true,
           "attack_escapes_not_higher": true,
           "policy_severity_increased": true,
+          "policy_has_security_or_severity_improvement": true,
           "benign_pass_not_lower": true,
           "false_positives_not_higher": true,
           "end_to_end_attack_outcomes_not_worse": true,
@@ -681,6 +685,7 @@
           "attack_containment_not_lower": true,
           "attack_escapes_not_higher": true,
           "policy_severity_increased": false,
+          "policy_has_security_or_severity_improvement": false,
           "benign_pass_not_lower": true,
           "false_positives_not_higher": true,
           "end_to_end_attack_outcomes_not_worse": true,
@@ -821,7 +826,7 @@
         "tool_gate_invariant": true,
         "public_development_cases_only": true,
         "active_policy_before": "policy-v2",
-        "reason": "Candidate failed: policy_severity_increased"
+        "reason": "Candidate failed: policy_severity_increased, policy_has_security_or_severity_improvement"
       },
       {
         "accepted": false,

@@ -19,7 +19,16 @@ def _read_json(relative: str) -> dict[str, Any]:
 def build_public_demo_snapshot() -> dict[str, Any]:
     """Return sanitized deterministic traces plus the committed public evidence."""
     traces = []
-    for scenario_id in load_demo_scenarios():
+    scenarios = load_demo_scenarios()
+    scenario_order = (
+        "indirect_injection",
+        "legitimate_support",
+        "answer_contamination",
+        "encoded_instruction",
+    )
+    for scenario_id in scenario_order:
+        if scenario_id not in scenarios:
+            raise ValueError(f"Required public demo scenario is missing: {scenario_id}")
         trace = run_scenario(scenario_id)
         # These values are execution noise, not evidence. Removing them makes the
         # data artifact stable while preserving every security-relevant trace.

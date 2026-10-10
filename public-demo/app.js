@@ -98,9 +98,73 @@
     target.appendChild(block("Answer", answer));
   }
 
+  function renderDecisionPassport(trace) {
+    const target = byId("decision-passport");
+    if (!target) return;
+    target.replaceChildren();
+    const decisions = Array.isArray(trace.protected.gate_decisions) ? trace.protected.gate_decisions : [];
+    const allowed = decisions.filter((decision) => decision.outcome === "allow").length;
+    const denied = decisions.filter((decision) => decision.outcome === "deny").length;
+    const effects = Array.isArray(trace.protected.side_effects) ? trace.protected.side_effects : [];
+    const hash = trace.firewall.provenance.content_sha256;
+    const admitted = trace.firewall.action === "allow";
+    const entries = [
+      {
+        index: "01",
+        label: "INPUT / ORIGIN",
+        value: trace.source.source_id,
+        detail: `${trace.source.source_type} · ${trace.source.trusted ? "trusted" : "lower-trust"} · SHA-256 ${hash}`,
+        tone: "neutral"
+      },
+      {
+        index: "02",
+        label: "CONTENT / ADMISSION",
+        value: trace.firewall.action.toUpperCase(),
+        detail: admitted
+          ? "Source text was admitted to the protected deterministic proposal path."
+          : "Original source text was withheld from the protected deterministic proposal path.",
+        tone: admitted ? "positive" : "caution"
+      },
+      {
+        index: "03",
+        label: "TOOLS / AUTHORITY",
+        value: `${allowed} allowed · ${denied} denied`,
+        detail: decisions.length
+          ? decisions.map((decision) => `${decision.tool}: ${decision.outcome} — ${decision.reason}`).join(" | ")
+          : "No host gate decisions were recorded for this fixture.",
+        tone: denied ? "caution" : "neutral"
+      },
+      {
+        index: "04",
+        label: "RUNTIME / EFFECT",
+        value: `${effects.length} mock effect${effects.length === 1 ? "" : "s"}`,
+        detail: trace.protected.unauthorized_email_executed
+          ? "An unauthorized email effect was recorded; review this fixture."
+          : "No unauthorized email effect was recorded. Authorized mock effects, if any, are shown in the protected trace.",
+        tone: trace.protected.unauthorized_email_executed ? "caution" : "positive"
+      }
+    ];
+    for (const entry of entries) {
+      const card = document.createElement("article");
+      card.className = `passport-card passport-${entry.tone}`;
+      const kicker = document.createElement("p");
+      kicker.className = "passport-kicker";
+      kicker.textContent = `${entry.index} / ${entry.label}`;
+      const value = document.createElement("strong");
+      value.className = "passport-value";
+      value.textContent = entry.value;
+      const detail = document.createElement("p");
+      detail.className = "passport-detail";
+      detail.textContent = entry.detail;
+      card.append(kicker, value, detail);
+      target.appendChild(card);
+    }
+  }
+
   function renderScenario(trace) {
     text(byId("scenario-name"), trace.title);
     text(byId("scenario-description"), `Fixture ${trace.scenario_id} · source ${trace.source.source_type} · ${trace.source.source_id}`);
+    text(byId("authorized-task"), trace.intent.task);
     text(byId("source-trust"), trace.source.trusted ? "TRUSTED SOURCE" : "UNTRUSTED SOURCE");
     const metadata = byId("source-metadata");
     metadata.replaceChildren();
@@ -139,6 +203,7 @@
       ? "Protected path recorded an unauthorized email effect. Review this trace."
       : "Protected path recorded no unauthorized email effect.";
     protectedRun.appendChild(status);
+    renderDecisionPassport(trace);
   }
 
   function renderCandidates() {
@@ -146,7 +211,7 @@
     const candidates = data.candidates;
     const entries = [
       ["Category severity candidate", candidates.severity_hardening_candidate, "Accepted for policy hardening. The current public development cases show no newly contained attack or reduction in protected unauthorized side effects."],
-      ["Common phrase candidate", candidates.common_phrase_candidate, "Not promoted because it adds no hard-block severity after the accepted candidate. It did not lower benign pass or increase false positives on the 12 public controls."],
+      ["Common phrase candidate", candidates.common_phrase_candidate, "Not promoted because it improves neither attack containment nor block severity. It did not lower benign pass or increase false positives on the 12 public controls."],
       ["Permission-widening schema", candidates.unauthorized_schema_candidate, "Rejected by the candidate schema before evaluation."]
     ];
     for (const [title, result, description] of entries) {

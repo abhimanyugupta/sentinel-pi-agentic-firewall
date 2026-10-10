@@ -6,7 +6,7 @@ import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlsplit
 
 from sentinel_pi.app_state import AppState, ROOT
 
@@ -18,6 +18,12 @@ OVERSIZE_DRAIN_LIMIT = MAX_BODY_BYTES + 4_096
 def create_handler(state: AppState):
     class Handler(BaseHTTPRequestHandler):
         server_version = "SENTINEL-PI-local/0.1"
+        _MUTATING_PATHS = {
+            "/api/replay",
+            "/api/evaluate",
+            "/api/policy/candidate",
+            "/api/policy/rollback",
+        }
 
         def log_message(self, format: str, *args: Any) -> None:
             # Avoid logging request bodies, which may contain untrusted content.
@@ -63,6 +69,39 @@ def create_handler(state: AppState):
                 raise ValueError("Request body must be a JSON object.")
             return value
 
+        def _has_same_loopback_origin(self) -> bool:
+            origin = self.headers.get("Origin", "")
+            host = self.headers.get("Host", "")
+            if not origin or not host:
+                return False
+            try:
+                origin_parts = urlsplit(origin)
+                host_parts = urlsplit(f"//{host}")
+                origin_host = origin_parts.hostname.casefold() if origin_parts.hostname else ""
+                request_host = host_parts.hostname.casefold() if host_parts.hostname else ""
+                origin_port = origin_parts.port or 80
+                request_port = host_parts.port or 80
+            except ValueError:
+                return False
+            allowed_hosts = {"127.0.0.1", "localhost"}
+            return (
+                origin_parts.scheme.casefold() == "http"
+                and origin_parts.path in ("", "/")
+                and not origin_parts.query
+                and not origin_parts.fragment
+                and origin_parts.username is None
+                and origin_parts.password is None
+                and host_parts.path == ""
+                and host_parts.username is None
+                and host_parts.password is None
+                and origin_host in allowed_hosts
+                and request_host == origin_host
+                and origin_port == self.server.server_port
+                and request_port == self.server.server_port
+                and not host_parts.query
+                and not host_parts.fragment
+            )
+
         def do_GET(self) -> None:
             path = urlparse(self.path).path
             if path == "/api/health":
@@ -93,6 +132,16 @@ def create_handler(state: AppState):
 
         def do_POST(self) -> None:
             path = urlparse(self.path).path
+            if path not in self._MUTATING_PATHS:
+                self._json(404, {"error": "Not found."})
+                return
+            if not self._has_same_loopback_origin():
+                self._json(403, {"error": "State-changing requests require the same loopback origin."})
+                return
+            content_type = self.headers.get("Content-Type", "").split(";", 1)[0].strip().casefold()
+            if content_type != "application/json":
+                self._json(415, {"error": "State-changing requests require application/json."})
+                return
             try:
                 body = self._read_json()
                 if path == "/api/replay":

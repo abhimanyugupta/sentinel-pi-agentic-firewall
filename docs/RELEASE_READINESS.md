@@ -1,36 +1,35 @@
-# Independent Release Readiness
+# Public Release Readiness — Awaiting Publication Approval
 
-Audit date: 2026-10-09. This review covers the private development branch, the deterministic backend, the Pages-compatible static replay, evaluation evidence, and the local submission artifacts. See [`INDEPENDENT_RELEASE_REVIEW.md`](INDEPENDENT_RELEASE_REVIEW.md) for reproductions and command evidence.
+## Candidate scope
 
-## Current assessment
+The stable backend and frozen deterministic benchmark remain unchanged; the model adapter is not imported into or served by that backend. The curated source candidate includes an explicit, audited allowlist of the separate Gemma pilot adapter, host-controlled tool loop, parser, budget safeguard, synthetic cases, offline tests, sanitized recording, and evidence auditor. The static Pages candidate contains only deterministic replay assets and the recorded Gemma player, with no adapter, API, server, or tool execution.
 
-The repaired prototype is ready for private independent review. The public static demo bundle is safe to publish as a separate static-only export after a human approves its destination. No public repository, site, release, or Unstop submission was created in this review.
+The proposed public `main` tree is obtained by extracting `artifacts/submission.zip` into a new clean source tree. The proposed `gh-pages` tree is obtained by extracting `artifacts/public-demo.zip` at the branch root. Neither export includes private Git history. No public push, deployment, repository setting change, or hackathon submission has occurred in this preparation. Re-fetch both destination branches and recheck identity, ancestry, manifests, privacy and logged-out URLs immediately before any authorized publication.
 
-The evidence is intentionally scoped. The attack proposal comes from a transparent deterministic content-triggered simulator, not a live model. The 30-case public development corpus records classifier and firewall component results; all 18 attack cases were already blocked or quarantined. The accepted policy candidate changes five quarantine actions to block, with zero newly contained attacks and no decrease in protected unauthorized side effects. Do not call that candidate an attack-resistance improvement.
+## Public claims and denominators
 
-The protected synthetic support task uses the returned customer-record issue and passes six ticket-correctness checks in one fixed scenario. Its task facts and action authority are separate: the host-created contract constrains the action, but source IDs are not cryptographically authenticated. The answer guard catches the planted canary and exact fixture phrases; paraphrased unsupported claims can pass.
+- **Deterministic development corpus:** latest replay `eval-20261010T090050Z`; unchanged 30 public cases (18 attack, 12 benign), 49/49 expected labels, 54 predictions, 13 block / 5 quarantine, and 12/12 labeled benign controls allowed. Latest local fixture timing was 0.1130 ms median / 0.2996 ms p95; this is not service latency. The accepted benchmark candidate changes five quarantines to blocks and newly contains zero cases in this set. This remains component-level fixture evidence, not an end-to-end prevention result.
+- **Separate recorded model pilot:** six disclosed synthetic development cases, once per condition. The final run returned 34 generations; 4/6 tasks were correct unscreened and 6/6 screened. It includes one attacker-targeted poisoned-ticket proposal and one unsupported-ticket proposal, both denied by the same mandatory host gate. Both conditions had zero unauthorized mock effects. This is one reused paired run, not a prevention-rate estimate.
+- **Full model development history:** 133 generation attempts, 94 responses, 39 provider errors and two separate warm-up requests. The earlier 24-attempt authorization was exceeded by 109 attempts; no later explicit increase was found in the reviewed authorization history. The overrun is a process-control failure. An exhausted persistent cumulative guard is included; this release preparation made zero model calls.
+- These streams are not combined. No blind evaluation, independent red-team adjudication, statistical reliability, production readiness or business impact is claimed. The self-assessed F3 coverage refers only to configured categories represented in public development fixtures.
 
-## Verified materials
+## Verification results
 
-- The static lab is local HTML, CSS, JavaScript, and precomputed synthetic data. Its CSP disallows network connections, no write or model APIs are present, and the UI inserts fixture strings using `textContent`. Browser review verified the four scenario choices, baseline/protected traces, ticket predicates, candidate comparison, and expanded per-case table from a loopback-only static server.
-- The public evaluation denominator remains 30 cases: 18 attack and 12 benign. The latest recorded figures and separate end-to-end checks are in [`../evidence/evaluation-public.json`](../evidence/evaluation-public.json) and [`EVALUATION.md`](EVALUATION.md).
-- Candidate-policy reports distinguish policy severity from containment, unauthorized side effects, benign preservation, and task correctness. A rollback stack restores complete policy snapshots and consumes discarded versions rather than reviving a discarded branch.
-- The updated nine-slide PPTX passes Artifact Tool import/render and independent package and layout validators: nine slides, 16:9 dimensions, 158 text runs in Aptos, no validator findings. Microsoft PowerPoint itself was not opened during this review because its automation endpoint returned access denied.
-- The nine-page PDF was rendered from the final slide images and visually checked at full size. It is image-only, so its text is not selectable or searchable. It has no JavaScript, forms, links, annotations, or encryption. Use it as the visually verified submission copy; open the PPTX in PowerPoint locally if native-app compatibility must be confirmed.
-- No live model, external retrieval, sealed holdout, independent red-team evaluation, real tool effect, or recorded video exists.
+- Current judge-ready candidate: **74/74 deterministic tests and 27/27 experimental offline tests passed**; the pilot adapter tests use mocks and make no Ollama calls.
+- The rebuilt curated source archive was extracted into a clean-room directory. Its deterministic suite passed **74/74**, and its experimental offline suite passed **27/27**. No model inference was run.
+- Evidence integrity audit verified run-010 against its embedded request/response hashes and host/gate replay checks. It confirms 6 unique paired cases per condition, 34 responses, 22 proposals, one targeted and one unsupported ticket proposal denied, 4/6 versus 6/6 tasks, and zero unauthorized effects in both conditions. This is not independent provider attestation.
+- The read-only player displays the pinned model tag, full digest, Ollama runtime and generation options from recorded metadata. The evidence verifier checks that option set on every turn; browser inspection confirmed the text appears with the paired metrics.
+- Python compilation, main and supplemental JavaScript syntax checks, and the generated inline player-script syntax check passed. Packaging audits verified the manifests, paths and privacy rules: source archive **86 payload files** (87 including its manifest), including the explicit 13-file experimental adapter allowlist; static archive **7 payload assets** (8 including its manifest); no `.git` metadata, secret-pattern hits or private/holdout paths.
+- The clean-room static archive was served locally. At 1280×720, all four deterministic scenarios and their Decision Passports worked; at 1440×810, the incident-first page and poisoned-ticket Boundary X-ray were visually inspected. All six recorded-case controls updated the paired proposal, gate and task/effects panels. No browser console errors were observed, and the server log showed local static GET requests only. The page CSP sets `connect-src 'none'`. A 768×375 browser rendering was not verified because the available viewport control did not change the browser dimensions; responsive breakpoints are covered by static tests.
+- The updated nine-slide PPTX passed the available Artifact Tool import/render and layout checks with no layout warnings. Its nine-page PDF passed structural checks and visual inspection; it uses image-rendered slides and is not searchable. Opening the PPTX in native Microsoft PowerPoint remains unverified.
+- The public destination was fetched for comparison, not modified. At the checked snapshot, public `main` was `12f99afb50079264be601527892f1e7405a22835` and `gh-pages` was `79a7c78bf7f342c3b1e97c856af2264a5f9f8ec8`. Both branches are non-empty and differ from the current curated exports. The candidate adds the final pitch/evidence and Gemma source to `main`; `gh-pages` needs the recorded-model player. Re-fetch and compare again before publication.
 
-## Safe public-demo deployment
+## Remaining human gates
 
-`python -m sentinel_pi public-demo` rebuilds `public-demo/data.js` from the recorded synthetic scenarios and creates the static-only `artifacts/public-demo.zip`. The archive contains only the allowlisted HTML, CSS, JavaScript, snapshot, `.nojekyll`, README, and SHA-256 manifest. It has no application server, secrets, model calls, or side-effect endpoint. The demo can be hosted on GitHub Pages or another ordinary static host with relative paths.
+1. Review the final archives, manifests, evidence, deck/PDF, video script and disclosed budget-control failure. Each ZIP contains a per-file SHA-256 manifest; full archive SHA-256 values are supplied in the release handoff because the ZIP cannot contain its own hash.
+2. Explicitly approve publication of the exact curated archive to public `main` and the static archive to `gh-pages`. At that time, fetch the non-empty branches again, verify repository identity/visibility and ancestry, reconcile the current files without force-pushing, then use normal pushes only.
+3. If Pages is not already enabled, configure **Settings → Pages → Build and deployment → Deploy from a branch → `gh-pages` → `/ (root)` → Save**. Verify the actual site while logged out; the updated pages have not been deployed.
+4. After publication is approved and verified, record the 3–4 minute storyboard in Windows Snipping Tool, generate TTS audio, synchronize it, and inspect the real exported video for timing, legibility, audio, factual consistency and privacy. No audio or video file exists yet.
+5. Confirm the current hackathon form requirements and submit the verified repository, live demo URL, deck/PDF and inspected video manually. Submission has not occurred.
 
-Do not expose the unauthenticated loopback backend. A public interactive inference service would require a separate synthetic-only deployment configuration, authentication or abuse controls as appropriate, rate limits, isolation, logging policy, and a fresh security review. No hosted service is prepared or deployed.
-
-## Submission gates still open
-
-1. Human review and approval of the public source export and its exact destination.
-2. Publish the curated source archive to a separate public repository; keep the canonical development repository private.
-3. Deploy only the static demo archive to an approved public static host and verify it from a logged-out browser.
-4. Record and inspect a 2–4 minute video. The script and storyboard exist; no recording exists.
-5. Confirm the current Unstop form, deadline, URLs, accepted file formats, and team fields; submit manually and retain the receipt.
-
-No production claims, measured business-impact claims, live-model results, blind-set results, or independent validation claims are supported.
+No public source push, Pages deployment, visibility change, paid service, external provider call, or hackathon submission is authorized by this checkpoint.

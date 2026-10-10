@@ -94,7 +94,7 @@ Latency is a local deterministic-rule microbenchmark; it excludes a live model, 
 
 ## Remaining caveats and next work
 
-- The detector and agent simulator are deterministic and offline; no live model/provider behavior was tested.
+- At the time of this backend review, the detector and agent simulator were deterministic and offline; no live model/provider behavior had been tested. A later, separate local Gemma 3 experiment is documented in `GEMMA3_PILOT_REVIEW.md`; it is not evidence from this deterministic backend or benchmark.
 - The public corpus is small and known. Its results do not estimate field performance or establish universal prevention.
 - Provenance IDs must come from trusted host code in any future integration.
 - Sanitization is not implemented; `sanitize` currently fails closed at the protected proposal boundary.

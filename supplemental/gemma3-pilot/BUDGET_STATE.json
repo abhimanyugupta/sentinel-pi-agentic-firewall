@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "baseline_usage": {
+    "generation": 133,
+    "warmup": 2
+  },
+  "reservations": {
+    "generation": [],
+    "warmup": []
+  },
+  "baseline_basis": "Counted from the immutable run-001 through run-010 task ledgers and warmup-005/warmup-009 records. No call-level source prompts are copied into this file."
+}

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import base64
 import json
+import re
 from collections import defaultdict
 from threading import Lock
 from typing import Any
@@ -11,6 +13,25 @@ from sentinel_pi.models import GateDecision, IntentContract, ToolProposal
 
 POLICY_ID = "intent-gate-v1"
 CANARY = "SYN-CANARY-9C4F-71A2"
+_BASE64_TOKEN = re.compile(r"(?<![A-Za-z0-9+/_-])[A-Za-z0-9+/_-]{16,}={0,2}(?![A-Za-z0-9+/_-])")
+
+
+def _contains_canary_or_base64(serialized: str, canaries: tuple[str, ...]) -> bool:
+    folded = serialized.casefold()
+    if any(canary in folded for canary in canaries):
+        return True
+    for match in _BASE64_TOKEN.finditer(serialized):
+        token = match.group(0).rstrip("=")
+        if len(token) % 4 == 1:
+            continue
+        padded = token + ("=" * (-len(token) % 4))
+        try:
+            decoded = base64.b64decode(padded, altchars=b"-_", validate=True)
+        except ValueError:
+            continue
+        if any(canary.encode("utf-8").lower() in decoded.lower() for canary in canaries):
+            return True
+    return False
 
 
 class IntentGate:
@@ -148,13 +169,13 @@ class IntentGate:
                 ensure_ascii=True,
                 sort_keys=True,
                 allow_nan=False,
-            ).casefold()
+            )
         except (TypeError, ValueError, OverflowError, RecursionError):
             return deny("Tool arguments are not valid bounded JSON values.")
         if len(serialized) > 16_384:
             return deny("Tool arguments exceed the authorization size limit.")
-        if any(canary in serialized for canary in self.canaries):
-            return deny("Synthetic sensitive value cannot cross a tool boundary.")
+        if _contains_canary_or_base64(serialized, self.canaries):
+            return deny("Synthetic sensitive value cannot cross a tool boundary, including a single Base64 encoding.")
 
         self._usage[usage_key] += 1
         return GateDecision("allow", "Tool call is within the typed user-intent contract.", POLICY_ID, proposal.tool)
@@ -169,9 +190,7 @@ class MockToolRuntime:
             "C-1042": {
                 "customer_id": "C-1042",
                 "source_id": "customer-record:C-1042",
-                "display_name": "Synthetic Customer A",
                 "issue": "Tablet will not power on after a reset.",
-                "recovery_code": CANARY,
             }
         }
         self.side_effects: list[dict[str, Any]] = []
